@@ -1,11 +1,86 @@
 import Head from 'next/head'
 import Image from 'next/image'
-import { Inter } from 'next/font/google'
+import { Poppins } from 'next/font/google'
 import styles from '@/styles/Home.module.css'
+import "material-icons/iconfont/material-icons.css"
+import { useState, useEffect, useRef, FormEvent } from 'react';
 
-const inter = Inter({ subsets: ['latin'] })
+const poppins = Poppins({ weight: "400", subsets: ["latin"] });
+const poppinsBlack = Poppins({ weight: "900", subsets: ["latin"] });
+
+import Background from '@/components/Background'
+import Button from '@/components/Button';
+
+interface AnswerObject {
+  answer: string;
+  end: number,
+  score: number,
+  start: number,
+}
 
 export default function Home() {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [context, setContext] = useState('');
+  const [question, setQuestion] = useState('');
+  const [answer, setAnswer] = useState("");
+  const [summarization, setSummarization] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const hiddenFileInput = useRef<any>(null);
+
+  const handleFileChange = async (e: any) => {
+    setLoading(true);
+    const file = e.target.files[0];
+  } 
+
+  const getAnswer = async () => {
+    const response = await fetch("/api/question", {
+      method: "POST",
+      body: JSON.stringify({
+        question,
+        context
+      })
+    })
+    console.log(response)
+    if(response.ok) {
+      const responseObj = await response.json() as AnswerObject;
+      console.log(responseObj);
+      setAnswer(responseObj.answer);
+      console.log(responseObj.answer)
+    } else {
+      try {
+        console.log(await response.json());
+      } catch (e) {}
+      console.log("error", response.statusText)
+    }
+  }
+
+  const summarize = async () => {
+    const response = await fetch("/api/summarize", {
+      method: "POST",
+      body: JSON.stringify({
+        context
+      })
+    })
+    if(response.ok) {
+      const sumResponse = await response.json();
+      console.log(sumResponse);
+      setSummarization(sumResponse.summary_text);
+      setContext(sumResponse.summary_text);
+    } else {
+      try {
+        console.log(await response.json());
+      } catch (e) {}
+      console.log("error", response.statusText)
+    }
+  }
+
+  const compute = async (e: FormEvent) => {
+    e.preventDefault();
+    summarize();
+    getAnswer();
+  }
+
   return (
     <>
       <Head>
@@ -14,100 +89,70 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className={`${styles.main} ${inter.className}`}>
-        <div className={styles.description}>
-          <p>
-            Get started by editing&nbsp;
-            <code className={styles.code}>pages/index.tsx</code>
-          </p>
-          <div>
-            <a
-              href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              By{' '}
-              <Image
-                src="/vercel.svg"
-                alt="Vercel Logo"
-                className={styles.vercelLogo}
-                width={100}
-                height={24}
-                priority
-              />
-            </a>
+      <main className={`${styles.main} ${poppins.className} `}>
+        <div className={styles.titleWrapper}>
+          <h1 className={`${styles.title} ${poppinsBlack.className}`}>Summarize Everything</h1>
+        </div>
+        <form onSubmit={compute} className={styles.formWrapper}>
+
+          <div className={styles.formEnterContext}>
+            <span>Enter Context</span>
+            <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+              <Button iconName='upload'>Drop file</Button>
+              <input name='file' type="file" ref={hiddenFileInput} onChange={handleFileChange} style={{ display: "none" }} />
+              <span>or</span>
+            </div>
+            <div className={`${styles.formTextWrapper} ${isExpanded && styles.formTextWrapperExpanded}`}>
+              <label htmlFor="textPaste">Paste Text</label>
+              <div>
+                <textarea
+                  id="textPaste" 
+                  autoComplete='off'
+                  autoCorrect='on'
+                  spellCheck
+                  autoFocus={false}
+                  value={context}
+                  name='textPaste'
+                  className={poppins.className}
+                  onChange={(e) => setContext(e.currentTarget.value)}
+                />
+                {context.length > 32 && <button 
+                  className={styles.expandButton}
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  >
+                    <span 
+                      className='material-icons'>
+                      keyboard_double_arrow_down
+                    </span>
+                      Expand
+                </button>}
+              </div>
+            </div>
           </div>
-        </div>
+          <div className={styles.formQuestion}>
+            <label htmlFor="questionInput">Ask a question</label>
+            <div className={styles.inputWrapper}>
+              <span className='material-icons'>search</span>
+              <input 
+                className={poppins.className} 
+                type="text" 
+                onChange={(e) => setQuestion(e.currentTarget.value)}
+              />
+              </div>
+          </div>
 
-        <div className={styles.center}>
-          <Image
-            className={styles.logo}
-            src="/next.svg"
-            alt="Next.js Logo"
-            width={180}
-            height={37}
-            priority
-          />
-        </div>
+          <Button type='submit'>Ask</Button>
+          <div className={styles.inputWrapper}>
+            <input 
+              className={`${poppins.className} ${styles.input}`} 
+              type="text"
+              value={answer}
+            />
+          </div>
+        </form>
+        
+        <Background />
 
-        <div className={styles.grid}>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Docs <span>-&gt;</span>
-            </h2>
-            <p>
-              Find in-depth information about Next.js features and&nbsp;API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Learn <span>-&gt;</span>
-            </h2>
-            <p>
-              Learn about Next.js in an interactive course with&nbsp;quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Templates <span>-&gt;</span>
-            </h2>
-            <p>
-              Discover and deploy boilerplate example Next.js&nbsp;projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Deploy <span>-&gt;</span>
-            </h2>
-            <p>
-              Instantly deploy your Next.js site to a shareable URL
-              with&nbsp;Vercel.
-            </p>
-          </a>
-        </div>
       </main>
     </>
   )

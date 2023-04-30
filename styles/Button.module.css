@@ -1,0 +1,45 @@
+
+
+.wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: fit-content;
+    height: 3rem;
+    overflow: hidden;
+    border-radius: 9px;
+    font-size: 16pt;
+    font-weight: 700;
+    color: var(--primary);
+    background-color: var(--primary-dark);
+    cursor: pointer;
+    transition: all .25s;
+}
+
+.wrapper:hover {
+    transform: translateY(-2px);
+}
+
+.button {
+    color: inherit;
+    background-color: inherit;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    outline: none;
+    border: none;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    cursor: pointer;
+    transition: all .25s;
+}
+
+.buttonChildren {
+    color: inherit;
+    background-color: inherit;
+}
