@@ -9,12 +9,16 @@ export default function Button({
     children="",
     iconName="",
     type="button",
-    onClick=() => {}
+    onClick=() => {},
+    disabled=false,
+    icon=null,
 }: {
     children?: React.ReactNode | React.ReactNode[],
     iconName?: string,
     type?: "button" | "submit" | "reset" | undefined,
-    onClick?: () => void
+    onClick?: () => void,
+    disabled?: boolean,
+    icon?: React.ReactNode | React.ReactNode[],
 }) {
 
     return (
@@ -23,13 +27,18 @@ export default function Button({
             <button 
                 type={type}
                 onClick={onClick}
-                className={styles.button}>
+                disabled={disabled}
+                className={styles.button}
+                >
                 <span className={`
                         material-icons 
                         ${styles.icon}`
                     }>
                     {iconName}
                 </span>
+                <span
+                    className={styles.icon}
+                >{icon}</span>
                 <span 
                     className={`
                         ${styles.buttonChildren} 

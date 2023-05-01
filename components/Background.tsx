@@ -10,7 +10,7 @@ export default function Background() {
             position: 'absolute',
             bottom: 0,
             left: 0,
-            width: "100%",
+            width: "100vw",
             zIndex: -1,
             transform: "scaleY(2.66)",
             transformOrigin: "bottom",
@@ -18,7 +18,8 @@ export default function Background() {
         }}>
             <svg 
                 style={{
-                    filter: "blur(40px)"
+                    filter: "blur(40px)",
+                    width: "100%"
                 }}
                 id="visual" 
                 viewBox="0 0 900 600" 
